@@ -11,3 +11,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+body {
+  background-color: #f7f7f7;
+}
+
+.container {
+  max-width: 960px;
+}
+
+h2 {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}

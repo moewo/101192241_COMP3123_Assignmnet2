@@ -1,12 +1,12 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Layout/Navbar';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import EmployeeListPage from './pages/EmployeeListPage';
-import EmployeeFormPage from './pages/EmployeeFormPage';
-import EmployeeDetailPage from './pages/EmployeeDetailPage';
-import PrivateRoute from './components/PrivateRoute';
+import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Navbar from './components/Layout/Navbar'
+import LoginPage from './pages/LoginPage'
+import SignupPage from './pages/SignupPage'
+import EmployeeListPage from './pages/EmployeeListPage'
+import EmployeeFormPage from './pages/EmployeeFormPage'
+import EmployeeDetailPage from './pages/EmployeeDetailPage'
+import PrivateRoute from './components/PrivateRoute'
 
 function App() {
   return (
@@ -53,7 +53,7 @@ function App() {
         </Routes>
       </div>
     </>
-  );
+  )
 }
 
-export default App;
+export default App

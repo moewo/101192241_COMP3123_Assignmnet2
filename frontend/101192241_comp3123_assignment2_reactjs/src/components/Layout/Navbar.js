@@ -1,15 +1,15 @@
-import React, { useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import React, { useContext } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../context/AuthContext'
 
 const Navbar = () => {
-  const { isAuthenticated, logout } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useContext(AuthContext)
+  const navigate = useNavigate()
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+    logout()
+    navigate('/login')
+  }
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
@@ -22,17 +22,23 @@ const Navbar = () => {
             {!isAuthenticated && (
               <>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/login">Login</Link>
+                  <Link className="nav-link" to="/login">
+                    Login
+                  </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/signup">Signup</Link>
+                  <Link className="nav-link" to="/signup">
+                    Signup
+                  </Link>
                 </li>
               </>
             )}
             {isAuthenticated && (
               <>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/employees">Employees</Link>
+                  <Link className="nav-link" to="/employees">
+                    Employees
+                  </Link>
                 </li>
                 <li className="nav-item">
                   <button className="btn btn-outline-light ms-2" onClick={handleLogout}>
@@ -45,7 +51,7 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

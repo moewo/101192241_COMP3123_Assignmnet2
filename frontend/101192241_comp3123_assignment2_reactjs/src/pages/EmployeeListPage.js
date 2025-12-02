@@ -1,44 +1,48 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import axiosClient from '../api/axiosClient';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import axiosClient from '../api/axiosClient'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-const fetchEmployees = async ({ queryKey }) => {
-  const [_key, filters] = queryKey;
-  const params = {};
-  if (filters.department) params.department = filters.department;
-  if (filters.position) params.position = filters.position;
-
-  const endpoint = Object.keys(params).length ? '/employees/search' : '/employees';
-  const response = await axiosClient.get(endpoint, { params });
-  return response.data;
-};
+const fetchEmployees = async () => {
+  const response = await axiosClient.get('/emp/employees')
+  return response.data
+}
 
 const EmployeeListPage = () => {
-  const [department, setDepartment] = useState('');
-  const [position, setPosition] = useState('');
-  const queryClient = useQueryClient();
+  const [department, setDepartment] = useState('')
+  const [position, setPosition] = useState('')
+  const queryClient = useQueryClient()
 
   const { data: employees, isLoading, isError } = useQuery({
-    queryKey: ['employees', { department, position }],
+    queryKey: ['employees'],
     queryFn: fetchEmployees,
-  });
+  })
 
   const handleSearch = (e) => {
-    e.preventDefault();
-  };
+    e.preventDefault()
+  }
 
   const handleClear = () => {
-    setDepartment('');
-    setPosition('');
-    queryClient.invalidateQueries(['employees']);
-  };
+    setDepartment('')
+    setPosition('')
+    queryClient.invalidateQueries(['employees'])
+  }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this employee?')) return;
-    await axiosClient.delete(`/employees/${id}`);
-    queryClient.invalidateQueries(['employees', { department, position }]);
-  };
+    if (!window.confirm('Are you sure you want to delete this employee?')) return
+    await axiosClient.delete('/emp/employees', { params: { eid: id } })
+    queryClient.invalidateQueries(['employees'])
+  }
+
+  const filteredEmployees = (employees || []).filter((emp) => {
+    const matchesDepartment = department
+      ? (emp.department || '').toLowerCase().includes(department.toLowerCase())
+      : true
+    const matchesPosition = position
+      ? (emp.position || '').toLowerCase().includes(position.toLowerCase())
+      : true
+    return matchesDepartment && matchesPosition
+  })
 
   return (
     <div>
@@ -77,61 +81,53 @@ const EmployeeListPage = () => {
       </form>
 
       {isLoading && <p>Loading employees...</p>}
-      {isError && (
-        <div className="alert alert-danger">Failed to load employees.</div>
+      {isError && <div className="alert alert-danger">Failed to load employees.</div>}
+
+      {filteredEmployees && filteredEmployees.length === 0 && !isLoading && (
+        <p>No employees found.</p>
       )}
 
-      {employees && employees.length === 0 && (
-        <p>No employees found. Try adding one.</p>
-      )}
-
-      {employees && employees.length > 0 && (
+      {filteredEmployees && filteredEmployees.length > 0 && (
         <div className="table-responsive">
           <table className="table table-striped table-bordered">
             <thead>
               <tr>
-                <th>Profile</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Department</th>
                 <th>Position</th>
+                <th>Date Of Joining</th>
+                <th>Salary</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {employees.map((emp) => (
-                <tr key={emp._id}>
+              {filteredEmployees.map((emp) => (
+                <tr key={emp.employee_id}>
                   <td>
-                    {emp.profilePictureUrl ? (
-                      <img
-                        src={emp.profilePictureUrl}
-                        alt={emp.name}
-                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%' }}
-                      />
-                    ) : (
-                      'N/A'
-                    )}
+                    {emp.first_name} {emp.last_name}
                   </td>
-                  <td>{emp.name}</td>
                   <td>{emp.email}</td>
                   <td>{emp.department}</td>
                   <td>{emp.position}</td>
+                  <td>{emp.date_of_joining ? emp.date_of_joining.substring(0, 10) : ''}</td>
+                  <td>{emp.salary}</td>
                   <td>
                     <Link
                       className="btn btn-sm btn-info me-2"
-                      to={`/employees/${emp._id}`}
+                      to={`/employees/${emp.employee_id}`}
                     >
                       View
                     </Link>
                     <Link
                       className="btn btn-sm btn-warning me-2"
-                      to={`/employees/${emp._id}/edit`}
+                      to={`/employees/${emp.employee_id}/edit`}
                     >
                       Edit
                     </Link>
                     <button
                       className="btn btn-sm btn-danger"
-                      onClick={() => handleDelete(emp._id)}
+                      onClick={() => handleDelete(emp.employee_id)}
                     >
                       Delete
                     </button>
@@ -143,7 +139,7 @@ const EmployeeListPage = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default EmployeeListPage;
+export default EmployeeListPage

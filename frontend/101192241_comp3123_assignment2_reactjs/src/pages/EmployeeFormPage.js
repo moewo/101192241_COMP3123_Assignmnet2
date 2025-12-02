@@ -1,97 +1,102 @@
-import React, { useEffect, useState } from 'react';
-import axiosClient from '../api/axiosClient';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react'
+import axiosClient from '../api/axiosClient'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const EmployeeFormPage = ({ mode }) => {
-  const isEdit = mode === 'edit';
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const isEdit = mode === 'edit'
+  const { id } = useParams()
+  const navigate = useNavigate()
 
   const [form, setForm] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     department: '',
     position: '',
     salary: '',
-  });
-  const [file, setFile] = useState(null);
-  const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState('');
+    date_of_joining: '',
+  })
+  const [errors, setErrors] = useState({})
+  const [serverError, setServerError] = useState('')
 
   useEffect(() => {
     const loadEmployee = async () => {
       if (isEdit && id) {
         try {
-          const res = await axiosClient.get(`/employees/${id}`);
-          const emp = res.data;
+          const res = await axiosClient.get(`/emp/employees/${id}`)
+          const emp = res.data
           setForm({
-            name: emp.name || '',
+            first_name: emp.first_name || '',
+            last_name: emp.last_name || '',
             email: emp.email || '',
             department: emp.department || '',
             position: emp.position || '',
-            salary: emp.salary || '',
-          });
+            salary: emp.salary != null ? String(emp.salary) : '',
+            date_of_joining: emp.date_of_joining ? emp.date_of_joining.substring(0, 10) : '',
+          })
         } catch (err) {
-          console.error(err);
-          setServerError('Failed to load employee for editing.');
+          setServerError('Failed to load employee for editing.')
         }
       }
-    };
-    loadEmployee();
-  }, [isEdit, id]);
+    }
+    loadEmployee()
+  }, [isEdit, id])
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0] || null);
-  };
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
 
   const validate = () => {
-    const newErrors = {};
-    if (!form.name) newErrors.name = 'Name is required';
-    if (!form.email) newErrors.email = 'Email is required';
-    if (!form.department) newErrors.department = 'Department is required';
-    if (!form.position) newErrors.position = 'Position is required';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    const newErrors = {}
+    if (!form.first_name) newErrors.first_name = 'First name is required'
+    if (!form.last_name) newErrors.last_name = 'Last name is required'
+    if (!form.email) newErrors.email = 'Email is required'
+    if (!form.department) newErrors.department = 'Department is required'
+    if (!form.position) newErrors.position = 'Position is required'
+    if (!form.salary) newErrors.salary = 'Salary is required'
+    if (!form.date_of_joining) newErrors.date_of_joining = 'Date of joining is required'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setServerError('');
-    if (!validate()) return;
+    e.preventDefault()
+    setServerError('')
+    if (!validate()) return
+
+    const payload = {
+      first_name: form.first_name,
+      last_name: form.last_name,
+      email: form.email,
+      department: form.department,
+      position: form.position,
+      salary: Number(form.salary),
+      date_of_joining: form.date_of_joining,
+    }
 
     try {
-      const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, value);
-        }
-      });
-      if (file) {
-        formData.append('profilePicture', file);
-      }
-
       if (isEdit) {
-        await axiosClient.put(`/employees/${id}`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await axiosClient.put(`/emp/employees/${id}`, payload)
       } else {
-        await axiosClient.post('/employees', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await axiosClient.post('/emp/employees', payload)
       }
-
-      navigate('/employees');
+      navigate('/employees')
     } catch (err) {
-      console.error(err);
-      setServerError(
-        err.response?.data?.message || 'Failed to save employee. Please try again.'
-      );
+      if (err.response && err.response.data) {
+        const data = err.response.data
+        if (data.errors && Array.isArray(data.errors)) {
+          const msg = data.errors.map((e) => e.msg).join(', ')
+          setServerError(msg)
+        } else if (data.message) {
+          setServerError(data.message)
+        } else {
+          setServerError('Failed to save employee. Please try again.')
+        }
+      } else {
+        setServerError('Failed to save employee. Please try again.')
+      }
     }
-  };
+  }
 
   return (
     <div>
@@ -100,14 +105,25 @@ const EmployeeFormPage = ({ mode }) => {
 
       <form onSubmit={handleSubmit} noValidate className="mt-3">
         <div className="mb-3">
-          <label className="form-label">Name</label>
+          <label className="form-label">First Name</label>
           <input
-            name="name"
-            className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-            value={form.name}
+            name="first_name"
+            className={`form-control ${errors.first_name ? 'is-invalid' : ''}`}
+            value={form.first_name}
             onChange={handleChange}
           />
-          {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+          {errors.first_name && <div className="invalid-feedback">{errors.first_name}</div>}
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Last Name</label>
+          <input
+            name="last_name"
+            className={`form-control ${errors.last_name ? 'is-invalid' : ''}`}
+            value={form.last_name}
+            onChange={handleChange}
+          />
+          {errors.last_name && <div className="invalid-feedback">{errors.last_name}</div>}
         </div>
 
         <div className="mb-3">
@@ -130,9 +146,7 @@ const EmployeeFormPage = ({ mode }) => {
             value={form.department}
             onChange={handleChange}
           />
-          {errors.department && (
-            <div className="invalid-feedback">{errors.department}</div>
-          )}
+          {errors.department && <div className="invalid-feedback">{errors.department}</div>}
         </div>
 
         <div className="mb-3">
@@ -143,30 +157,33 @@ const EmployeeFormPage = ({ mode }) => {
             value={form.position}
             onChange={handleChange}
           />
-          {errors.position && (
-            <div className="invalid-feedback">{errors.position}</div>
-          )}
+          {errors.position && <div className="invalid-feedback">{errors.position}</div>}
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Salary (optional)</label>
+          <label className="form-label">Salary</label>
           <input
             name="salary"
             type="number"
-            className="form-control"
+            className={`form-control ${errors.salary ? 'is-invalid' : ''}`}
             value={form.salary}
             onChange={handleChange}
           />
+          {errors.salary && <div className="invalid-feedback">{errors.salary}</div>}
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Profile Picture (optional)</label>
+          <label className="form-label">Date Of Joining</label>
           <input
-            type="file"
-            className="form-control"
-            accept="image/*"
-            onChange={handleFileChange}
+            name="date_of_joining"
+            type="date"
+            className={`form-control ${errors.date_of_joining ? 'is-invalid' : ''}`}
+            value={form.date_of_joining}
+            onChange={handleChange}
           />
+          {errors.date_of_joining && (
+            <div className="invalid-feedback">{errors.date_of_joining}</div>
+          )}
         </div>
 
         <button type="submit" className="btn btn-primary">
@@ -174,7 +191,7 @@ const EmployeeFormPage = ({ mode }) => {
         </button>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default EmployeeFormPage;
+export default EmployeeFormPage

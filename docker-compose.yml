@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: comp3123-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: comp3123-backend
+    restart: always
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/comp3123
+      - PORT=4000
+    depends_on:
+      - mongo
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: ./frontend/101192241_comp3123_assignment2_reactjs
+    container_name: comp3123-frontend
+    restart: always
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:4000/api/v1
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  mongo-data:
